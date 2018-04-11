@@ -31,10 +31,10 @@ class Blockonomics {
     // Setup logging
 		$this->logger = new Log('blockonomics.log');
 
-    //$blockonomics_base_url = 'https://www.blockonomics.co';
-    //$this->blockonomics_websocket_url = 'wss://www.blockonomics.co';
-    $blockonomics_base_url = 'http://localhost:8080';
-    $this->blockonomics_websocket_url = 'ws://localhost:8080';
+    $blockonomics_base_url = 'https://www.blockonomics.co';
+    $this->blockonomics_websocket_url = 'wss://www.blockonomics.co';
+    //$blockonomics_base_url = 'http://localhost:8080';
+    //$this->blockonomics_websocket_url = 'ws://localhost:8080';
     $this->blockonomics_new_address_url = $blockonomics_base_url.'/api/new_address';
     $this->blockonomics_price_url = $blockonomics_base_url.'/api/price?currency=';
     $this->setting('debug', 1);
