@@ -19,11 +19,7 @@ class ControllerExtensionPaymentBlockonomics extends Controller {
 	 */
 	public function __construct($registry) {
 		parent::__construct($registry);
-                if(!extension_loaded('gmp') && !extension_loaded('bcmath'))
-		{
-			echo 'Cannot use the Blockonomics plugin: please enable PHP support for either GMP or BCMath.';
-			exit;
-		}
+
 		// Make langauge strings and Blockonomics Library available to all
 		$this->load->language('extension/payment/blockonomics');
 
