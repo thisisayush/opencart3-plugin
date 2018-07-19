@@ -6,7 +6,7 @@
 class Blockonomics {
 
 	/** @var int $version */
-	public $version = '1.0.0';
+	public $version = '0.1.0';
 
 	/** @var Registry $registry */
 	private $registry;
@@ -37,7 +37,7 @@ class Blockonomics {
     //$this->blockonomics_websocket_url = 'ws://localhost:8080';
     $this->blockonomics_new_address_url = $blockonomics_base_url.'/api/new_address';
     $this->blockonomics_price_url = $blockonomics_base_url.'/api/price?currency=';
-    $this->setting('debug', 1);
+    $this->setting('debug', 0);
 	}
 
 	/**
