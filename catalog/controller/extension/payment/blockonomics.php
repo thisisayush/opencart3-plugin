@@ -53,7 +53,7 @@ class ControllerExtensionPaymentBlockonomics extends Controller {
 	}
 
   /**
-   * Convenience wrapper for bitpay logs
+   * Convenience wrapper for logs
    * @param string $level The type of log.
    *					  Should be 'error', 'warn', 'info', 'debug', 'trace'
    *					  In normal mode, 'error' and 'warn' are logged
@@ -218,55 +218,6 @@ class ControllerExtensionPaymentBlockonomics extends Controller {
 	}
 
 	/**
-	 * Success return page
-	 *
-	 * Progresses the order if valid, and redirects to OpenCart's Checkout Success page
-	 *
-	 * @return void
-	 */
-  /**
-	public function success() {
-		$this->load->model('checkout/order');
-		$order_id = $this->session->data['order_id'];
-		if (is_null($order_id)) {
-			$this->response->redirect($this->url->link('checkout/success'));
-			return;
-		}
-
-		$order = $this->model_checkout_order->getOrder($order_id);
-		try {
-			$invoice = $this->blockonomics->getInvoice($this->session->data['blockonomics_invoice']);
-		} catch (Exception $e) {
-			$this->response->redirect($this->url->link('checkout/success'));
-			return;
-		}
-
-		switch ($invoice->getStatus()) {
-			case 'paid':
-				$order_status_id = $this->setting('paid_status');
-				$order_message = $this->language->get('text_progress_paid');
-				break;
-			case 'confirmed':
-				$order_status_id = $this->setting('confirmed_status');
-				$order_message = $this->language->get('text_progress_confirmed');
-				break;
-			case 'complete':
-				$order_status_id = $this->setting('complete_status');
-				$order_message = $this->language->get('text_progress_complete');
-				break;
-			default:
-				$this->response->redirect($this->url->link('checkout/checkout'));
-				return;
-		}
-
-		// Progress the order status
-		$this->model_checkout_order->addOrderHistory($order_id, $order_status_id);
-		$this->session->data['blockonomics_invoice'] = null;
-		$this->response->redirect($this->url->link('checkout/success'));
-	}
-   */
-
-	/**
 	 * Callback Handler
 	 * @return void
 	 */
@@ -294,18 +245,37 @@ class ControllerExtensionPaymentBlockonomics extends Controller {
       return;
     }
 
+    $comment = "";
+    $expected = $order['bits'] / 1.0e8;
+		$paid = $value / 1.0e8;
+
 		switch ($status) {
 			case 0:
 				$order_status_id = $this->setting('paid_status');
 				$order_message = $this->language->get('text_progress_paid');
+				$comment = "Waiting for Confirmation on Bitcoin network<br>" .
+								"Bitcoin transaction id: $txid <br>" .
+								"You can view the transaction at: <br>" .
+								"<a href='https://www.blockonomics.co/api/tx?txid=$txid&addr=$addr' target='_blank'>https://www.blockonomics.co/api/tx?txid=$txid&addr=$addr</a>";
 				break;
 			case 1:
 				$order_status_id = $this->setting('confirmed_status');
 				$order_message = $this->language->get('text_progress_confirmed');
 				break;
 			case 2:
-				$order_status_id = $this->setting('complete_status');
-				$order_message = $this->language->get('text_progress_complete');
+				if ($paid < $expected) {
+					$order_status_id = '7'; // 7 = Canceled
+					$order_message = 'Canceled';
+					$comment = "<b>Warning: Invoice canceled as Paid Amount was less than expected</b><br>";
+				} else {
+					$order_status_id = $this->setting('complete_status');
+					$order_message = $this->language->get('text_progress_complete');
+				}
+				$comment .= "Bitcoin transaction id: $txid\r" .
+						"Expected amount: $expected BTC\r" .
+						"Paid amount: $paid BTC\r" .
+						"You can view the transaction at:\r" .
+						"<a href='https://www.blockonomics.co/api/tx?txid=$txid&addr=$addr' target='_blank'>https://www.blockonomics.co/api/tx?txid=$txid&addr=$addr</a>";
 				break;
 			default:
 				$this->log('info', 'Status is not paid/confirmed/complete. Redirecting to checkout/checkout');
@@ -314,6 +284,6 @@ class ControllerExtensionPaymentBlockonomics extends Controller {
 		}
 
 		// Progress the order status
-		$this->model_checkout_order->addOrderHistory($order['id_order'], $order_status_id);
+		$this->model_checkout_order->addOrderHistory($order['id_order'], $order_status_id, $comment, true);
 	}
 }
