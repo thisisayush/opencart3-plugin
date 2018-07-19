@@ -50,7 +50,7 @@ $_['entry_send_server_info'] = 'Send Server Information';
 
 // Help
 $_['help_paid_status']       = 'A fully paid invoice awaiting confirmation';
-$_['help_confirmed_status']  = 'A confirmed invoice per Risk/Speed settings';
+$_['help_confirmed_status']  = 'Once confirmed Bitcoin transaction order status';
 $_['help_complete_status']   = 'An invoice that has been credited to your account';
 $_['help_callback_url']        = 'Blockonomics&#8217;s IPN will post invoice status updates to this URL';
 $_['help_api_key']        = 'Blockonimcs will provide API KEY in its settings to do API calls';
