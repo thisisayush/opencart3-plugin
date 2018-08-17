@@ -53,12 +53,23 @@ class Blockonomics {
 
   public function getBTCPrice() {
     //Getting price
-    $options = array( 'http' => array( 'method'  => 'GET') );
-    $context = stream_context_create($options);
     $currency_code = $this->config->get('config_currency');
-    $contents = file_get_contents($this->blockonomics_price_url.$currency_code);
-    $priceObj = json_decode($contents);
-    return $priceObj->price;
+    $url = $this->blockonomics_price_url.$currency_code;
+
+    $ch = curl_init();
+    curl_setopt($ch, CURLOPT_URL, $url);
+    curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
+    curl_setopt($ch, CURLOPT_TIMEOUT, 60);
+
+    $data = curl_exec($ch);
+    curl_close($ch);
+
+    $responseObj = json_decode($data);
+    if (!isset($responseObj)) {
+      return '';
+    }
+
+    return $responseObj->price;
   }
 
   /**
