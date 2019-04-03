@@ -18,7 +18,7 @@
       {{ content_top }}
       <h1>{{ heading_title }}</h1>
 
-      {% if btc_address != ""  %}
+      {% if address_error == ""  %}
       <div id="payment-view">
         <div id="btc-href" data-href="{{ btc_href }}"></div>
         <div id="btc-address" data-address="{{ btc_address }}"></div>
@@ -62,7 +62,7 @@
       {% else %}
       <div id="address-error">
         <h3>Could not generate new bitcoin address.</h3>
-        <i>Note to webmaster: Your webhost is blocking outgoing HTTPS connections. Blockonomics requires an outgoing HTTPS (port 443) to generate new address. Check with your webhost to allow this. Also make sure that <a href="https://www.crybit.com/enable-allow_url_fopen/" target="_blank">allow_url_fopen is On</a> on your server. If issue persists, log a ticket on <a href="http://blockonomics.freshdesk.com/" target="_blank">http://blockonomics.freshdesk.com/</a></i>
+        <i>Note to webmaster: {{ address_error }}. If issue persists, log a ticket on <a href="http://blockonomics.freshdesk.com/" target="_blank">http://blockonomics.freshdesk.com/</a></i>
       </div>
       {% endif %}
 

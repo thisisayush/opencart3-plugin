@@ -124,11 +124,21 @@ class Blockonomics {
     curl_close($ch);
 
     $responseObj = json_decode($data);
-    if (!isset($responseObj)) {
-      return '';
+    if($httpcode != 200) {
+      if (isset($responseObj->message)) {
+        if ($responseObj->message=='Could not find matching xpub') {
+          $responseObj->error = 'There is a problem in your callback url';
+        } else {
+          $responseObj->error = $responseObj->message;
+        }
+      }
+      if($httpcode == 401) {
+        $responseObj = new stdClass();
+        $responseObj->error = 'API Key is invalid';
+      }
     }
 
-    return $responseObj->address;
+    return $responseObj;
   }
 	/**
 	 * Constructs some helpful diagnostic info.

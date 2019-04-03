@@ -138,25 +138,28 @@ class ControllerExtensionPaymentBlockonomics extends Controller {
     $data['satoshi_amount'] = $satoshi_amount;
     $data['fiat_amount'] = $fiat_amount;
     
-    $btc_address = $this->blockonomics->genBTCAddress();
-    $data['btc_address'] = $btc_address;
-    $data['btc_href'] = "bitcoin:".$btc_address."?amount=".$satoshi_amount;
+    $response = $this->blockonomics->genBTCAddress();
+    if(!isset($response->error)) {
+      $btc_address=$response->address;
+      $data['btc_address'] = $btc_address;
+      $data['btc_href'] = "bitcoin:".$btc_address."?amount=".$satoshi_amount;
 
-    $this->blockonomics->log('info', $btc_address, 1);
-    $this->blockonomics->log('info', $price, 1);
-    $current_time = time();
-    $data['orderTimestamp'] = $current_time;
-    $order_id = $order_info['order_id'];
-    $data['order_id'] = $order_id;
+      $this->blockonomics->log('info', $btc_address, 1);
+      $this->blockonomics->log('info', $price, 1);
+      $current_time = time();
+      $data['orderTimestamp'] = $current_time;
+      $order_id = $order_info['order_id'];
+      $data['order_id'] = $order_id;
 
-    $data['success_url'] = $this->url->link('checkout/success');
-    $data['websocket_url'] = $this->blockonomics->blockonomics_websocket_url;
-		$data['timeout_url'] = $this->url->link('extension/payment/blockonomics/timeout', $this->config->get('config_secure'));
+      $data['success_url'] = $this->url->link('checkout/success');
+      $data['websocket_url'] = $this->blockonomics->blockonomics_websocket_url;
+  		$data['timeout_url'] = $this->url->link('extension/payment/blockonomics/timeout', $this->config->get('config_secure'));
 
-    if ( $btc_address != "" ) {
       //Insert into blockonomics orders table
       $this->db->query("INSERT IGNORE INTO ".DB_PREFIX."blockonomics_bitcoin_orders (id_order, timestamp,  addr, txid, status,value, bits, bits_payed) VALUES
         ('".(int)$order_id."','".(int)$current_time."','".$btc_address."', '', -1,'".(float)$fiat_amount."','".(int)$bits."', 0)");
+    } else {
+      $data['address_error'] = $response->error;
     }
 
 		$this->response->setOutput($this->load->view('extension/payment/blockonomicsinvoice', $data));
@@ -232,6 +235,10 @@ class ControllerExtensionPaymentBlockonomics extends Controller {
     $addr = $_GET['addr'];
 
 		$this->log('info', 'Callback Handler called');
+
+    if($this->setting('callback_secret') != $secret) {
+      die('Invalid secret');
+    }
 
     //Upate order info
     $query="UPDATE ".DB_PREFIX."blockonomics_bitcoin_orders SET status='".(int)$status."',txid='".$txid."',bits_payed=".(int)$value." WHERE addr='".$addr."'";
