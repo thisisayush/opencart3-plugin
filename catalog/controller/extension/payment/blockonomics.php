@@ -137,7 +137,10 @@ class ControllerExtensionPaymentBlockonomics extends Controller {
     $satoshi_amount = $bits/1.0e8;
     $data['satoshi_amount'] = $satoshi_amount;
     $data['fiat_amount'] = $fiat_amount;
+    $order_id = $order_info['order_id'];
     
+    $this->model_checkout_order->addOrderHistory($order_id, 1, "", true);
+
     $response = $this->blockonomics->genBTCAddress();
     if(!isset($response->error)) {
       $btc_address=$response->address;
@@ -148,7 +151,6 @@ class ControllerExtensionPaymentBlockonomics extends Controller {
       $this->blockonomics->log('info', $price, 1);
       $current_time = time();
       $data['orderTimestamp'] = $current_time;
-      $order_id = $order_info['order_id'];
       $data['order_id'] = $order_id;
 
       $data['success_url'] = $this->url->link('checkout/success');
