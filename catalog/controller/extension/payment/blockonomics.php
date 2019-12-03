@@ -137,33 +137,47 @@ class ControllerExtensionPaymentBlockonomics extends Controller {
     $satoshi_amount = $bits/1.0e8;
     $data['satoshi_amount'] = $satoshi_amount;
     $data['fiat_amount'] = $fiat_amount;
+    $order_id = $order_info['order_id'];
+
+    $current_time = time();
+    $data['orderTimestamp'] = $current_time;
+    $data['order_id'] = $order_id;
+
+    $data['success_url'] = $this->url->link('checkout/success');
+    $data['websocket_url'] = $this->blockonomics->blockonomics_websocket_url;
+    $data['timeout_url'] = $this->url->link('extension/payment/blockonomics/timeout', $this->config->get('config_secure'));
     
-    $response = $this->blockonomics->genBTCAddress();
-    if(!isset($response->error)) {
-      $btc_address=$response->address;
-      $data['btc_address'] = $btc_address;
-      $data['btc_href'] = "bitcoin:".$btc_address."?amount=".$satoshi_amount;
+    $sql = $this->db->query("SELECT * FROM ".DB_PREFIX."blockonomics_bitcoin_orders WHERE `id_order` = '".$order_id."' LIMIT 1");
+    $order = $sql->row;
 
-      $this->blockonomics->log('info', $btc_address, 1);
-      $this->blockonomics->log('info', $price, 1);
-      $current_time = time();
-      $data['orderTimestamp'] = $current_time;
-      $order_id = $order_info['order_id'];
-      $data['order_id'] = $order_id;
+    // If there is no existing order in database, generate Bitcoin address
+    if(!isset($order['id_order'])){
+      $response = $this->blockonomics->genBTCAddress();
+      if(!isset($response->error)) {
+        $btc_address=$response->address;
+        $data['btc_address'] = $btc_address;
+        $data['btc_href'] = "bitcoin:".$btc_address."?amount=".$satoshi_amount;
 
-      $data['success_url'] = $this->url->link('checkout/success');
-      $data['websocket_url'] = $this->blockonomics->blockonomics_websocket_url;
-  		$data['timeout_url'] = $this->url->link('extension/payment/blockonomics/timeout', $this->config->get('config_secure'));
+        $this->blockonomics->log('info', $btc_address, 1);
+        $this->blockonomics->log('info', $price, 1);
 
-      //Insert into blockonomics orders table
-      $this->db->query("INSERT IGNORE INTO ".DB_PREFIX."blockonomics_bitcoin_orders (id_order, timestamp,  addr, txid, status,value, bits, bits_payed) VALUES
-        ('".(int)$order_id."','".(int)$current_time."','".$btc_address."', '', -1,'".(float)$fiat_amount."','".(int)$bits."', 0)");
+        //Insert into blockonomics orders table
+        $this->db->query("INSERT IGNORE INTO ".DB_PREFIX."blockonomics_bitcoin_orders (id_order, timestamp,  addr, txid, status,value, bits, bits_payed) VALUES
+          ('".(int)$order_id."','".(int)$current_time."','".$btc_address."', '', -1,'".(float)$fiat_amount."','".(int)$bits."', 0)");
+      } else {
+        $data['address_error'] = $response->error;
+      }
+    // If existing order is found, use existing BTC address and update price and timestamp
     } else {
-      $data['address_error'] = $response->error;
+      $data['btc_address'] = $order['addr'];
+      $data['btc_href'] = "bitcoin:".$order['addr']."?amount=".$satoshi_amount;
+
+      $query="UPDATE ".DB_PREFIX."blockonomics_bitcoin_orders SET bits='".$bits."',value='".$fiat_amount."',timestamp=".$current_time." WHERE addr='".$order['addr']."'";
+      $this->db->query($query);
     }
 
-		$this->response->setOutput($this->load->view('extension/payment/blockonomicsinvoice', $data));
-	}
+    $this->response->setOutput($this->load->view('extension/payment/blockonomicsinvoice', $data));
+  }
 
 	/**
 	 * Shows timeout message
