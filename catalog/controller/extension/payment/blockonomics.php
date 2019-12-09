@@ -138,6 +138,8 @@ class ControllerExtensionPaymentBlockonomics extends Controller {
     $data['satoshi_amount'] = $satoshi_amount;
     $data['fiat_amount'] = $fiat_amount;
     $order_id = $order_info['order_id'];
+    
+    $this->model_checkout_order->addOrderHistory($order_id, 1, "", true);
 
     $current_time = time();
     $data['orderTimestamp'] = $current_time;
