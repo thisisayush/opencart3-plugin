@@ -69,6 +69,8 @@ $_['error_api_key']                    = '`Blocknomics API Key` should not be em
 $_['error_callback_test_setup']                 = 'There is a problem in your callback url';
 $_['error_apikeytest_test_setup']                    = 'API Key is invalid';
 $_['error_callback_doesnot_match_test_setup']        = 'You have an existing callback URL. Refer instructions on integrating multiple websites';
+$_['error_blocking_http_test_setup']                 = 'Your server is blocking outgoing HTTPS calls';
+$_['error_new_api_key']                 = 'New API Key: Save your changes and then click \'Test Setup\'';
 
 
 // Log
