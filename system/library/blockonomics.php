@@ -37,6 +37,8 @@ class Blockonomics {
     //$this->blockonomics_websocket_url = 'ws://localhost:8080';
     $this->blockonomics_new_address_url = $blockonomics_base_url.'/api/new_address';
     $this->blockonomics_price_url = $blockonomics_base_url.'/api/price?currency=';
+    $this->blockonomics_get_callback_url = $blockonomics_base_url.'/api/address?&no_balance=true&only_xpub=true&get_callback=true';
+    $this->blockonomics_set_callback_url = $blockonomics_base_url.'/api/update_callback';
     $this->setting('debug', 0);
 	}
 
@@ -105,8 +107,12 @@ class Blockonomics {
     }
   }
 
-  public function genBTCAddress(){
-    $url = $this->blockonomics_new_address_url."?match_callback=".$this->setting('callback_url');
+  public function genBTCAddress($reset=false){
+    if($reset){
+      $url = $this->blockonomics_new_address_url."?match_callback=".$this->setting('callback_url')."&reset=1";
+    }else{
+      $url = $this->blockonomics_new_address_url."?match_callback=".$this->setting('callback_url');
+    }
 
     $ch = curl_init();
     curl_setopt($ch, CURLOPT_URL, $url);
@@ -140,6 +146,109 @@ class Blockonomics {
 
     return $responseObj;
   }
+
+  public function get_callbacks(){
+    $url =  $this->blockonomics_get_callback_url;
+
+    $ch = curl_init();
+    curl_setopt($ch, CURLOPT_URL, $url);
+    curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+    curl_setopt($ch, CURLOPT_HTTPHEADER, array(
+      'Authorization: Bearer '.$this->setting('api_key'),
+      'Content-type: application/x-www-form-urlencoded'
+    ));
+
+    $callback_data = curl_exec($ch);
+    $callback_httpcode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
+    curl_close($ch);
+
+    $callback_responseObj = json_decode($callback_data);
+    $response["httpcode"] = $callback_httpcode;
+      foreach($callback_responseObj as $key => $value){
+        if(isset($value->callback)){
+          $response[$key] = new stdClass();
+          $response[$key]->callback = $value->callback;
+          $response[$key]->address = $value->address;
+        }
+      }
+
+    return $response;
+  }
+
+  public function update_callback($callback_url, $xpub){
+    $url =  $this->blockonomics_set_callback_url;
+    $body = json_encode(array('callback' => $callback_url, 'xpub' => $xpub));
+
+
+    $ch = curl_init();
+    curl_setopt($ch, CURLOPT_URL, $url);
+    curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
+    curl_setopt($ch, CURLOPT_POST, 1);
+    curl_setopt($ch, CURLOPT_POSTFIELDS, $body);
+    curl_setopt($ch, CURLOPT_HTTPHEADER, array(
+      'Authorization: Bearer '.$this->setting('api_key'),
+      'Content-type: application/x-www-form-urlencoded'
+    ));
+
+    $callback_data = curl_exec($ch);
+    $callback_httpcode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
+    curl_close($ch);
+
+  }
+
+  public function testsetup()
+  {
+    $response = $this->get_callbacks();
+    $responseerror = null;
+
+    // Xpup and api key check
+    if (!$response["httpcode"]){
+      $responseerror = 'Your server is blocking outgoing HTTPS calls';
+    }
+    elseif($response["httpcode"] == 401) {
+      $responseerror = 'API Key is invalid';
+    }
+    elseif($response["httpcode"] != 200) {
+      $responseerror= 'There is a problem in your callback url';
+    }
+    elseif(count($response) == 2){
+      $callback_url = htmlspecialchars_decode($this->setting('callback_url'));
+      $callback_url_without_schema = preg_replace('/https?:\/\//', '', $callback_url);
+      $response_callback_without_schema = preg_replace('/https?:\/\//', '', $response[0]->callback);
+
+      if($callback_url_without_schema != $response_callback_without_schema){
+        $responseerror = 'You have an existing callback URL. Refer instructions on integrating multiple websites';
+        if(substr($response_callback_without_schema, 0, strpos($response_callback_without_schema, "&secret=")) == substr($callback_url_without_schema, 0, strpos($callback_url_without_schema, "&secret=")) || !$response[0]->callback){
+          $this->update_callback($callback_url, $response[0]->address);
+          $responseerror = null;
+        }
+      }
+
+    }
+    else{
+      $responseerror = 'You have an existing callback URL. Refer instructions on integrating multiple websites';
+      foreach ($response as $res_obj){
+        if(preg_replace('/https?:\/\//', '', $res_obj->callback) == $callback_url_without_schema){
+          $responseerror = null;
+        }
+      }
+    }
+
+    if(!$responseerror){
+      $response_address = $this->genBTCAddress(true);
+      if (isset($response_address->error)){
+        $responseerror = $response_address->error;
+      }
+    }
+
+    if($responseerror){
+      return $responseerror;
+    }else{
+      return false;
+    }
+
+  }
+
 	/**
 	 * Constructs some helpful diagnostic info.
 	 * @return string
