@@ -154,7 +154,7 @@ class ControllerExtensionPaymentBlockonomics extends Controller {
 
     // If there is no existing order in database, generate Bitcoin address
     if(!isset($order['id_order'])){
-      $response = $this->blockonomics->genBTCAddress();
+      $response = $this->blockonomics->getNewAddress();
       if(!isset($response->error)) {
         $btc_address=$response->address;
         $data['btc_address'] = $btc_address;

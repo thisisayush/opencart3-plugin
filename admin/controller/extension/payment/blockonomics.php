@@ -185,7 +185,7 @@ class ControllerExtensionPaymentBlockonomics extends Controller {
 	  if($response){
 		if($response == 'There is a problem in your callback url'){
 			$this->session->data['test_setup_error'] = $this->language->get('error_callback_test_setup');
-		}elseif($response == 'API Key is invalid') {
+		}elseif($response == 'API Key is incorrect') {
 			$this->session->data['test_setup_error']  = $this->language->get('error_apikeytest_test_setup');
 		}elseif($response == 'You have an existing callback URL. Refer instructions on integrating multiple websites'){
 			$this->session->data['test_setup_error']  = $this->language->get('error_callback_doesnot_match_test_setup');
