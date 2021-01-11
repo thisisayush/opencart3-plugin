@@ -183,17 +183,9 @@ class ControllerExtensionPaymentBlockonomics extends Controller {
   public function testsetup() {
 	  $response = $this->blockonomics->testsetup();
 	  if($response){
-		if($response == 'There is a problem in your callback url'){
-			$this->session->data['test_setup_error'] = $this->language->get('error_callback_test_setup');
-		}elseif($response == 'API Key is incorrect') {
-			$this->session->data['test_setup_error']  = $this->language->get('error_apikeytest_test_setup');
-		}elseif($response == 'You have an existing callback URL. Refer instructions on integrating multiple websites'){
-			$this->session->data['test_setup_error']  = $this->language->get('error_callback_doesnot_match_test_setup');
-		}elseif($response == 'Your server is blocking outgoing HTTPS calls'){
-			$this->session->data['test_setup_error']  = $this->language->get('error_blocking_http_test_setup');
-		}
+			$this->session->data['test_setup_error'] = $this->language->get('error_'.$response);
 	  }else{
-		$this->session->data['test_setup_success'] = $this->language->get('text_apikeytest_test_setup');
+		$this->session->data['test_setup_success'] = $this->language->get('congrats');
 	  }
 	  $this->response->redirect($this->url->link('extension/payment/blockonomics', 'user_token=' . $this->session->data['user_token'] . '', true));
 

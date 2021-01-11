@@ -216,13 +216,13 @@ class Blockonomics {
     $callback_url = htmlspecialchars_decode($this->setting('callback_url'));
     
     if (!isset($response->response_code)) {
-        $error_str = 'Your server is blocking outgoing HTTPS calls';
+        $error_str = 'blockedHttps';
     } elseif ($response->response_code == 401) {
-        $error_str = 'API Key is incorrect';
+        $error_str = 'incorrectApi';
     } elseif ($response->response_code != 200) {
         $error_str = $response->data;
     } elseif (!isset($response->data) || count($response->data) == 0) {
-        $error_str = 'You have not entered an xpub';
+        $error_str = 'noXpub';
     } elseif (count($response->data) == 1) {
         if (!$response->data[0]->callback || $response->data[0]->callback == null) {
             //No callback URL set, set one
@@ -237,11 +237,11 @@ class Blockonomics {
                 $post_content = '{"callback": "' . $callback_url . '", "xpub": "' . $response->data[0]->address . '"}';
                 $this->doCurlCall($set_callback_url, $post_content);
             } else {
-                $error_str = 'Your have an existing callback URL. Refer instructions on integrating multiple websites';
+                $error_str = 'existingCallbackUrl';
             }
         }
     } else {
-        $error_str = 'Your have an existing callback URL or multiple xPubs. Refer instructions on integrating multiple websites';
+        $error_str = 'multipleXpubs';
 
         foreach ($response->data as $resObj) {
             if ($resObj->callback == $callback_url) {
