@@ -167,7 +167,7 @@ class ControllerExtensionPaymentBlockonomics extends Controller {
         $this->db->query("INSERT IGNORE INTO ".DB_PREFIX."blockonomics_bitcoin_orders (id_order, timestamp,  addr, txid, status,value, bits, bits_payed) VALUES
           ('".(int)$order_id."','".(int)$current_time."','".$btc_address."', '', -1,'".(float)$fiat_amount."','".(int)$bits."', 0)");
       } else {
-        $data['address_error'] = $response->error;
+        $data['address_error'] = true;
       }
     // If existing order is found, use existing BTC address and update price and timestamp
     } else {
