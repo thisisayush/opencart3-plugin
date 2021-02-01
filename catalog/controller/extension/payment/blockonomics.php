@@ -269,8 +269,17 @@ class ControllerExtensionPaymentBlockonomics extends Controller {
     }
 
     $comment = "";
-    $expected = $order['bits'] / 1.0e8;
-		$paid = $value / 1.0e8;
+    $bits = $order['bits'];
+    $expected = $bits / 1.0e8;
+    $real_paid = $value / 1.0e8;
+	$paid = $value / 1.0e8;
+
+	$underpayment_slack = $this->setting('underpayment_slack') / 100 * $bits;
+	if ($value < $bits - $underpayment_slack) {
+	    $paid = $paid;
+	} else {
+	    $paid = $expected;
+	}
 
 		switch ($status) {
 			case 0:
@@ -296,7 +305,7 @@ class ControllerExtensionPaymentBlockonomics extends Controller {
 				}
 				$comment .= "Bitcoin transaction id: $txid\r" .
 						"Expected amount: $expected BTC\r" .
-						"Paid amount: $paid BTC\r" .
+						"Paid amount: $real_paid BTC\r" .
 						"You can view the transaction at:\r" .
 						"<a href='https://www.blockonomics.co/api/tx?txid=$txid&addr=$addr' target='_blank'>https://www.blockonomics.co/api/tx?txid=$txid&addr=$addr</a>";
 				break;
