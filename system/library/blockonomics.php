@@ -51,6 +51,37 @@ class Blockonomics {
 		return $this->registry->get($name);
 	}
 
+  /*
+   * Make a request using curl
+   */
+  public function doCurlCall($url, $post_content = '')
+  {
+      $ch = curl_init();
+      curl_setopt($ch, CURLOPT_URL, $url);
+      curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
+      if ($post_content) {
+          curl_setopt($ch, CURLOPT_POST, 1);
+          curl_setopt($ch, CURLOPT_POSTFIELDS, $post_content);
+      }
+      curl_setopt($ch, CURLOPT_TIMEOUT, 60);
+      curl_setopt(
+          $ch,
+          CURLOPT_HTTPHEADER,
+          [
+              'Authorization: Bearer ' . $this->setting('api_key'),
+              'Content-type: application/x-www-form-urlencoded',
+          ]
+      );
+      $data = curl_exec($ch);
+      $httpcode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
+      curl_close($ch);
+
+      $responseObj = new stdClass();
+      $responseObj->data = json_decode($data);
+      $responseObj->response_code = $httpcode;
+      return $responseObj;
+  }
+
   public function getBTCPrice() {
     //Getting price
     $currency_code = $this->config->get('config_currency');
@@ -105,41 +136,133 @@ class Blockonomics {
     }
   }
 
-  public function genBTCAddress(){
-    $url = $this->blockonomics_new_address_url."?match_callback=".$this->setting('callback_url');
+  /*
+   * Get new address from Blockonomics Api
+   */
+  public function getNewAddress($reset = false)
+  {
+      $api_key = $this->setting('api_key');
+      $callback_secret = $this->setting('callback_secret');
+
+      if ($reset) {
+          $get_params = "?match_callback=$callback_secret&reset=1";
+      } else {
+          $get_params = "?match_callback=$callback_secret";
+      }
+
+      $ch = curl_init();
+
+      curl_setopt($ch, CURLOPT_URL, 'https://www.blockonomics.co/api/new_address' . $get_params);
+      curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
+      curl_setopt($ch, CURLOPT_CUSTOMREQUEST, 'POST');
+
+      $header = 'Authorization: Bearer ' . $api_key;
+      $headers = [];
+      $headers[] = $header;
+      curl_setopt($ch, CURLOPT_HTTPHEADER, $headers);
+
+      $contents = curl_exec($ch);
+      if (curl_errno($ch)) {
+          exit('Error:' . curl_error($ch));
+      }
+
+      $responseObj = json_decode($contents);
+      //Create response object if it does not exist
+      if (!isset($responseObj)) {
+          $responseObj = new stdClass();
+      }
+      $responseObj->{'response_code'} = curl_getinfo($ch, CURLINFO_HTTP_CODE);
+      curl_close($ch);
+      return $responseObj;
+  }
+
+  public function get_callbacks(){
+    $url =  $this->blockonomics_get_callback_url;
 
     $ch = curl_init();
     curl_setopt($ch, CURLOPT_URL, $url);
-    curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
-    curl_setopt($ch, CURLOPT_POST, 1);
-    curl_setopt($ch, CURLOPT_TIMEOUT, 60);
-    curl_setopt($ch, CURLOPT_POSTFIELDS, "");
+    curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
     curl_setopt($ch, CURLOPT_HTTPHEADER, array(
       'Authorization: Bearer '.$this->setting('api_key'),
       'Content-type: application/x-www-form-urlencoded'
     ));
 
-    $data = curl_exec($ch);
-    $httpcode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
+    $callback_data = curl_exec($ch);
+    $callback_httpcode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
     curl_close($ch);
 
-    $responseObj = json_decode($data);
-    if($httpcode != 200) {
-      if (isset($responseObj->message)) {
-        if ($responseObj->message=='Could not find matching xpub') {
-          $responseObj->error = 'There is a problem in your callback url';
-        } else {
-          $responseObj->error = $responseObj->message;
+    $callback_responseObj = json_decode($callback_data);
+    $response["httpcode"] = $callback_httpcode;
+      foreach($callback_responseObj as $key => $value){
+        if(isset($value->callback)){
+          $response[$key] = new stdClass();
+          $response[$key]->callback = $value->callback;
+          $response[$key]->address = $value->address;
         }
       }
-      if($httpcode == 401) {
-        $responseObj = new stdClass();
-        $responseObj->error = 'API Key is invalid';
-      }
+
+    return $response;
+  }
+
+  public function testsetup()
+  {
+    $xpub_fetch_url = 'https://www.blockonomics.co/api/address?&no_balance=true&only_xpub=true&get_callback=true';
+    $set_callback_url = 'https://www.blockonomics.co/api/update_callback';
+    $error_str = '';
+
+    $response = $this->doCurlCall($xpub_fetch_url);
+
+    $secret = $this->setting('callback_secret');
+    $callback_url = htmlspecialchars_decode($this->setting('callback_url'));
+    
+    if (!isset($response->response_code)) {
+        $error_str = 'blockedHttps';
+    } elseif ($response->response_code == 401) {
+        $error_str = 'incorrectApi';
+    } elseif ($response->response_code != 200) {
+        $error_str = $response->data;
+    } elseif (!isset($response->data) || count($response->data) == 0) {
+        $error_str = 'noXpub';
+    } elseif (count($response->data) == 1) {
+        if (!$response->data[0]->callback || $response->data[0]->callback == null) {
+            //No callback URL set, set one
+            $post_content = '{"callback": "' . $callback_url . '", "xpub": "' . $response->data[0]->address . '"}';
+            $this->doCurlCall($set_callback_url, $post_content);
+        } elseif ($response->data[0]->callback != $callback_url) {
+            // Check if only secret differs
+            $base_url = substr($callback_url, 0, -48);
+            if (strpos($response->data[0]->callback, $base_url) !== false) {
+                //Looks like the user regenrated callback by mistake
+                //Just force Update_callback on server
+                $post_content = '{"callback": "' . $callback_url . '", "xpub": "' . $response->data[0]->address . '"}';
+                $this->doCurlCall($set_callback_url, $post_content);
+            } else {
+                $error_str = 'existingCallbackUrl';
+            }
+        }
+    } else {
+        $error_str = 'multipleXpubs';
+
+        foreach ($response->data as $resObj) {
+            if ($resObj->callback == $callback_url) {
+                // Matching callback URL found, set error back to empty
+                $error_str = '';
+            }
+        }
     }
 
-    return $responseObj;
+    if ($error_str == '') {
+        // Test new address generation
+        $new_addresss_response = $this->getNewAddress(true);
+        if ($new_addresss_response->status != 200) {
+            $error_str = $new_addresss_response->message;
+        }
+    }
+
+    return $error_str;
+
   }
+
 	/**
 	 * Constructs some helpful diagnostic info.
 	 * @return string

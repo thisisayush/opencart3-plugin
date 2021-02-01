@@ -154,7 +154,7 @@ class ControllerExtensionPaymentBlockonomics extends Controller {
 
     // If there is no existing order in database, generate Bitcoin address
     if(!isset($order['id_order'])){
-      $response = $this->blockonomics->genBTCAddress();
+      $response = $this->blockonomics->getNewAddress();
       if(!isset($response->error)) {
         $btc_address=$response->address;
         $data['btc_address'] = $btc_address;
@@ -167,7 +167,7 @@ class ControllerExtensionPaymentBlockonomics extends Controller {
         $this->db->query("INSERT IGNORE INTO ".DB_PREFIX."blockonomics_bitcoin_orders (id_order, timestamp,  addr, txid, status,value, bits, bits_payed) VALUES
           ('".(int)$order_id."','".(int)$current_time."','".$btc_address."', '', -1,'".(float)$fiat_amount."','".(int)$bits."', 0)");
       } else {
-        $data['address_error'] = $response->error;
+        $data['address_error'] = true;
       }
     // If existing order is found, use existing BTC address and update price and timestamp
     } else {

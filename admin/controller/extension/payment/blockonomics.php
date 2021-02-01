@@ -77,6 +77,7 @@ class ControllerExtensionPaymentBlockonomics extends Controller {
 		$data['cancel'] = $this->url->link('extension/extension', 'user_token=' . $this->session->data['user_token'], 'SSL');
 		$data['url_reset'] = $this->url->link('extension/payment/blockonomics/reset', 'user_token=' . $this->session->data['user_token'], 'SSL');
 		$data['url_gen_secret'] = $this->url->link('extension/payment/blockonomics/gensecret', 'user_token=' . $this->session->data['user_token'], 'SSL');
+		$data['url_test_setup'] = $this->url->link('extension/payment/blockonomics/testsetup', 'user_token=' . $this->session->data['user_token'], 'SSL');
 
 		$data['breadcrumbs'] = array();
 
@@ -138,6 +139,18 @@ class ControllerExtensionPaymentBlockonomics extends Controller {
 			unset($this->session->data['success']);
 		}
 
+		$data['test_setup_error'] = '';
+		if (isset($this->session->data['test_setup_error'])) {
+			$data['test_setup_error'] = $this->session->data['test_setup_error'];
+			unset($this->session->data['test_setup_error']);
+		}
+
+		$data['test_setup_success'] = '';
+		if (isset($this->session->data['test_setup_success'])) {
+			$data['test_setup_success'] = $this->session->data['test_setup_success'];
+			unset($this->session->data['test_setup_success']);
+		}
+
 		$data['error_callback_url'] = '';
 		if (isset($this->error['callback_url'])) {
 			$data['error_callback_url'] = $this->error['callback_url'];
@@ -168,6 +181,17 @@ class ControllerExtensionPaymentBlockonomics extends Controller {
     $this->setting('callback_secret', $secret);
 
 		$this->response->redirect($this->url->link('extension/payment/blockonomics', 'user_token=' . $this->session->data['user_token'] . '', true));
+  }
+
+  public function testsetup() {
+	  $response = $this->blockonomics->testsetup();
+	  if($response){
+			$this->session->data['test_setup_error'] = $this->language->get('error_'.$response);
+	  }else{
+		$this->session->data['test_setup_success'] = $this->language->get('congrats');
+	  }
+	  $this->response->redirect($this->url->link('extension/payment/blockonomics', 'user_token=' . $this->session->data['user_token'] . '', true));
+
   }
 
 

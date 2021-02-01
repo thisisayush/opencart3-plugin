@@ -18,6 +18,7 @@ $_['text_popup_blocked']     = 'Pop-up Blocked';
 $_['text_popup']             = 'It appears your browser is blocking Blockonomics&apos;s pop-up. Click below to continue.';
 $_['text_are_you_sure']      = 'Are you sure?';
 $_['text_gen_secret']        = 'Generate Secret';
+$_['text_test_setup']        = 'Test Setup';
 
 // Tab
 $_['tab_settings']           = 'Settings';
@@ -35,6 +36,7 @@ $_['entry_geo_zone']         = 'Geo Zone';
 $_['entry_status']           = 'Status';
 $_['entry_sort_order']       = 'Sort Order';
 $_['entry_callback_secret']  = 'Callback Secret';
+$_['entry_test_setup']       = 'Test Setup';
 $_['entry_paid_status']      = 'Paid Status';
 $_['entry_confirmed_status'] = 'Confirmed Status';
 $_['entry_complete_status']  = 'Complete Status';
@@ -65,6 +67,15 @@ $_['warning_disconnected']      = 'Warning: You are no longer connected to Block
 // Error
 $_['error_callback_url']                    = '`Notification URL` needs to be a valid URL';
 $_['error_api_key']                    = '`Blocknomics API Key` should not be empty';
+$_['error_callback_test_setup']                 = 'There is a problem in your callback url';
+
+// Test Setup
+$_['congrats'] = 'Congrats ! Setup is all done';
+$_['error_blockedHttps'] = 'Your server is blocking outgoing HTTPS calls';
+$_['error_incorrectApi'] = 'API Key is incorrect';
+$_['error_noXpub'] = 'You have not entered an xpub';
+$_['error_existingCallbackUrl'] = 'Your have an existing callback URL. Refer instructions on integrating multiple websites';
+$_['error_multipleXpubs'] = 'Your have an existing callback URL or multiple xPubs. Refer instructions on integrating multiple websites';
 
 // Log
 $_['log_error_install']          = 'The Blockonomics payment extension was not installed correctly or the files are corrupt. Please reinstall the extension. If this message persists after a reinstall, contact support@blockonomics.co with this message.';
