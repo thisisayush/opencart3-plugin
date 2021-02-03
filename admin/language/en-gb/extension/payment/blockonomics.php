@@ -8,7 +8,7 @@ $_['text_edit']              = 'Edit Blockonomics';
 $_['text_changes']           = 'There are unsaved changes.';
 $_['text_blockonomics']            = '<a onclick="window.open(\'https://www.blockonomics.co/\');"><img src="view/image/payment/blockonomics.png" alt="Blockonomics" title="blockonomics" style="border: 1px solid #EEEEEE;" /></a>';
 $_['text_general']           = 'General';
-$_['text_advanced']          = 'Advanced';
+$_['text_blockonomics']      = 'Blockonomics';
 $_['text_all_geo_zones']     = 'All Geo Zones';
 $_['text_yes']               = 'Yes';
 $_['text_no']                = 'No';
@@ -36,8 +36,8 @@ $_['entry_sort_order']       = 'Sort Order';
 $_['entry_callback_secret']  = 'Callback Secret';
 $_['entry_test_setup']       = 'Test Setup';
 $_['entry_order_status']     = 'Order Status';
-$_['entry_callback_url']       = 'Callback URL';
-$_['entry_api_key']       = 'Blockonomics API Key';
+$_['entry_callback_url']     = 'Callback URL';
+$_['entry_api_key']          = 'API Key';
 $_['entry_underpayment_slack'] = 'Underpayment Slack %';
 $_['entry_debug']            = 'Debug Logging';
 $_['entry_name']             = 'Name';
@@ -48,9 +48,6 @@ $_['entry_send_logs']        = 'Send Blockonomics Log';
 $_['entry_send_server_info'] = 'Send Server Information';
 
 // Help
-$_['help_order_status']       = 'Status to set the order when payment confirmed';
-$_['help_callback_url']        = 'Blockonomics&#8217;s IPN will post invoice status updates to this URL';
-$_['help_api_key']        = 'Blockonimcs will provide API KEY in its settings to do API calls';
 $_['help_underpayment_slack'] = 'Allow payments that are off by a small percentage';
 
 // Warning
