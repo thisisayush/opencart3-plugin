@@ -8,7 +8,7 @@ $_['text_edit']              = 'Edit Blockonomics';
 $_['text_changes']           = 'There are unsaved changes.';
 $_['text_blockonomics']            = '<a onclick="window.open(\'https://www.blockonomics.co/\');"><img src="view/image/payment/blockonomics.png" alt="Blockonomics" title="blockonomics" style="border: 1px solid #EEEEEE;" /></a>';
 $_['text_general']           = 'General';
-$_['text_blockonomics']      = 'Blockonomics';
+$_['text_advanced']      = 'Blockonomics';
 $_['text_all_geo_zones']     = 'All Geo Zones';
 $_['text_yes']               = 'Yes';
 $_['text_no']                = 'No';
