@@ -283,7 +283,6 @@ class ControllerExtensionPaymentBlockonomics extends Controller {
 
 		switch ($status) {
 			case 0:
-				$order_status_id = $this->setting('paid_status');
 				$order_message = $this->language->get('text_progress_paid');
 				$comment = "Waiting for Confirmation on Bitcoin network<br>" .
 								"Bitcoin transaction id: $txid <br>" .
@@ -291,8 +290,6 @@ class ControllerExtensionPaymentBlockonomics extends Controller {
 								"<a href='https://www.blockonomics.co/api/tx?txid=$txid&addr=$addr' target='_blank'>https://www.blockonomics.co/api/tx?txid=$txid&addr=$addr</a>";
 				break;
 			case 1:
-				$order_status_id = $this->setting('confirmed_status');
-				$order_message = $this->language->get('text_progress_confirmed');
 				break;
 			case 2:
 				if ($paid < $expected) {
@@ -300,7 +297,7 @@ class ControllerExtensionPaymentBlockonomics extends Controller {
 					$order_message = 'Canceled';
 					$comment = "<b>Warning: Invoice canceled as Paid Amount was less than expected</b><br>";
 				} else {
-					$order_status_id = $this->setting('complete_status');
+					$order_status_id = $this->setting('order_status');
 					$order_message = $this->language->get('text_progress_complete');
 				}
 				$comment .= "Bitcoin transaction id: $txid\r" .
