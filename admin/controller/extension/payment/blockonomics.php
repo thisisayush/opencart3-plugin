@@ -33,7 +33,6 @@ class ControllerExtensionPaymentBlockonomics extends Controller {
 	public function index() {
 		// Saving settings
 		if (($this->request->server['REQUEST_METHOD'] == 'POST') && $this->request->post['action'] === 'save' && $this->validate()) {
-
 			$this->session->data['success'] = $this->language->get('text_success');
 			$this->setting('geo_zone_id', $this->request->post['payment_blockonomics_geo_zone_id']);
 			$this->setting('status', $this->request->post['payment_blockonomics_status']);
@@ -42,7 +41,7 @@ class ControllerExtensionPaymentBlockonomics extends Controller {
 			$this->setting('callback_url', $this->request->post['payment_blockonomics_callback_url']);
 			$this->setting('api_key', $this->request->post['payment_blockonomics_api_key']);
 			$this->setting('underpayment_slack', $this->request->post['payment_blockonomics_underpayment_slack']);
-			$this->setting('order_status', $this->request->post['payment_blockonomics_order_status']);
+			$this->setting('complete_status', $this->request->post['payment_blockonomics_complete_status']);
 			$this->session->data['success'] = $this->language->get('text_success');
 			$this->response->redirect($this->url->link('extension/payment/blockonomics', 'user_token=' . $this->session->data['user_token'], true));
 		}
@@ -59,9 +58,7 @@ class ControllerExtensionPaymentBlockonomics extends Controller {
 		$data['entry_api_key'] = $this->language->get('entry_api_key');
 		$data['entry_underpayment_slack'] = $this->language->get('entry_underpayment_slack');
 		$data['entry_callback_secret'] = $this->language->get('entry_callback_secret');
-    	$data['entry_order_status'] = $this->language->get('entry_order_status');
-
-    	$data['help_order_status'] = $this->language->get('help_order_status');
+    	$data['entry_complete_status'] = $this->language->get('entry_complete_status');
 
 		$data['button_save'] = $this->language->get('button_save');
 		$data['button_cancel'] = $this->language->get('button_cancel');
@@ -107,7 +104,7 @@ class ControllerExtensionPaymentBlockonomics extends Controller {
     // #ORDER STATUSES
 		$this->load->model('localisation/order_status');
 		$data['order_statuses'] = $this->model_localisation_order_status->getOrderStatuses();
-		$data['blockonomics_order_status'] = (isset($this->request->post['blockonomics_order_status'])) ? $this->request->post['blockonomics_order_status'] : $this->setting('order_status');
+		$data['blockonomics_complete_status'] = (isset($this->request->post['blockonomics_complete_status'])) ? $this->request->post['blockonomics_complete_status'] : $this->setting('complete_status');
 
 		// #LAYOUT
 		$data['header'] = $this->load->controller('common/header');
@@ -237,15 +234,15 @@ class ControllerExtensionPaymentBlockonomics extends Controller {
 
     	$this->load->model('localisation/order_status');
 		$order_statuses = $this->model_localisation_order_status->getOrderStatuses();
-		$default_order_status = null;
+		$default_complete_status = null;
 
 		foreach ($order_statuses as $order_status) {
 			if ($order_status['name'] == 'Processing') {
-				$default_order_status = $order_status['order_status_id'];
+				$default_complete_status = $order_status['order_status_id'];
 			}
     	}
 
-    $this->blockonomics->log("info", $default_order_status );
+    $this->blockonomics->log("info", $default_complete_status );
 
     //Generate callback secret
     $secret = md5(uniqid(rand(), true));
@@ -269,7 +266,7 @@ class ControllerExtensionPaymentBlockonomics extends Controller {
 			'payment_blockonomics_api_key' => null,
 			'payment_blockonomics_underpayment_slack' => '0',
 			'payment_blockonomics_version' => $this->blockonomics->version,
-			'payment_blockonomics_order_status' => $default_order_status
+			'payment_blockonomics_complete_status' => $default_complete_status
 		);
 		$this->model_setting_setting->editSetting('payment_blockonomics', $default_settings);
 
