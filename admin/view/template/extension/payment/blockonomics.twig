@@ -113,10 +113,11 @@
 
               <br>
               <h3 class="col-sm-10 col-sm-offset-2">{{ text_blockonomics }}</h3>
+              <input type="hidden" name="blockonomics_api_updated" id="blockonomics_api_updated" value="false">
               <div class="form-group">
-                <label class="col-sm-2 control-label" for="input-api-key">{{ entry_api_key }}</label>
+                <label class="col-sm-2 control-label" for="blockonomics_api_key">{{ entry_api_key }}</label>
                 <div class="col-sm-10">
-                  <input type="text" name="payment_blockonomics_api_key" id="input-api-key" value="{{ blockonomics_api_key }}" placeholder="{{ default_api_key }}" class="form-control" />
+                  <input type="text" name="payment_blockonomics_api_key" id="blockonomics_api_key" value="{{ blockonomics_api_key }}" placeholder="{{ default_api_key }}" class="form-control" onchange="valueChanged()" />
                   {% if error_api_key %}
                   <div class="text-danger">{{ error_api_key }}</div>
                   {% endif %}
@@ -160,7 +161,8 @@
               <div class="form-group">
                 <label class="col-sm-2 control-label" for="input-callback-secret">{{ entry_test_setup }}</label>
                 <div class="col-sm-3">
-                  <a href="{{ url_test_setup }}" data-toggle="tooltip" title="{{ text_test_setup }}" class="btn
+                  <div id="url_test_setup" data-url="{{ url_test_setup }}"></div>
+                  <a onclick="checkForAPIKeyChange();" data-toggle="tooltip" title="{{ text_test_setup }}" class="btn
                   btn-primary">{{ text_test_setup }}</a>
                 </div>
               </div>
@@ -216,8 +218,16 @@
   }
 </style>
   <script type="text/javascript">
-    function genSecret(){
-      
-    }
+      function valueChanged() {
+          document.getElementById('blockonomics_api_updated').value = 'true';
+      }
+      function checkForAPIKeyChange() {
+          if (document.getElementById('blockonomics_api_updated').value == 'true') {
+              alert('Settings have changed, click on Save first');
+          } else {
+              var apiUrl = document.getElementById("url_test_setup").dataset.url;
+              window.location = apiUrl;
+          }
+      }
   </script>
 {{ footer }}
