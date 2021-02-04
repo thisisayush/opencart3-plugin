@@ -155,7 +155,7 @@ class ControllerExtensionPaymentBlockonomics extends Controller {
     // If there is no existing order in database, generate Bitcoin address
     if(!isset($order['id_order'])){
       $response = $this->blockonomics->getNewAddress();
-      if(!isset($response->error)) {
+      if($response->response_code == 200) {
         $btc_address=$response->address;
         $data['btc_address'] = $btc_address;
         $data['btc_href'] = "bitcoin:".$btc_address."?amount=".$satoshi_amount;
@@ -283,31 +283,30 @@ class ControllerExtensionPaymentBlockonomics extends Controller {
 
 		switch ($status) {
 			case 0:
-				$order_status_id = $this->setting('paid_status');
-				$order_message = $this->language->get('text_progress_paid');
+				$order_status_id = '1';
 				$comment = "Waiting for Confirmation on Bitcoin network<br>" .
 								"Bitcoin transaction id: $txid <br>" .
 								"You can view the transaction at: <br>" .
 								"<a href='https://www.blockonomics.co/api/tx?txid=$txid&addr=$addr' target='_blank'>https://www.blockonomics.co/api/tx?txid=$txid&addr=$addr</a>";
+				// Progress the order status
+				$this->model_checkout_order->addOrderHistory($order['id_order'], $order_status_id, $comment, true);
 				break;
 			case 1:
-				$order_status_id = $this->setting('confirmed_status');
-				$order_message = $this->language->get('text_progress_confirmed');
 				break;
 			case 2:
 				if ($paid < $expected) {
 					$order_status_id = '7'; // 7 = Canceled
-					$order_message = 'Canceled';
 					$comment = "<b>Warning: Invoice canceled as Paid Amount was less than expected</b><br>";
 				} else {
 					$order_status_id = $this->setting('complete_status');
-					$order_message = $this->language->get('text_progress_complete');
 				}
 				$comment .= "Bitcoin transaction id: $txid\r" .
 						"Expected amount: $expected BTC\r" .
 						"Paid amount: $real_paid BTC\r" .
 						"You can view the transaction at:\r" .
 						"<a href='https://www.blockonomics.co/api/tx?txid=$txid&addr=$addr' target='_blank'>https://www.blockonomics.co/api/tx?txid=$txid&addr=$addr</a>";
+				// Progress the order status
+				$this->model_checkout_order->addOrderHistory($order['id_order'], $order_status_id, $comment, true);
 				break;
 			default:
 				$this->log('info', 'Status is not paid/confirmed/complete. Redirecting to checkout/checkout');
@@ -315,7 +314,5 @@ class ControllerExtensionPaymentBlockonomics extends Controller {
 				return;
 		}
 
-		// Progress the order status
-		$this->model_checkout_order->addOrderHistory($order['id_order'], $order_status_id, $comment, true);
 	}
 }
