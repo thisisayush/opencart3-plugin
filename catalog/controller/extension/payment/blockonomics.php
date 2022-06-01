@@ -177,7 +177,7 @@ class ControllerExtensionPaymentBlockonomics extends Controller {
       $query="UPDATE ".DB_PREFIX."blockonomics_bitcoin_orders SET bits='".$bits."',value='".$fiat_amount."',timestamp=".$current_time." WHERE addr='".$order['addr']."'";
       $this->db->query($query);
     }
-
+	$data['time_remaining'] = $this->blockonomics->getTimePeriod()*60;
     $this->response->setOutput($this->load->view('extension/payment/blockonomicsinvoice', $data));
   }
 

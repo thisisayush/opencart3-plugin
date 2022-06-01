@@ -46,6 +46,7 @@ $_['entry_subject']          = 'Subject';
 $_['entry_description']      = 'Description';
 $_['entry_send_logs']        = 'Send Blockonomics Log';
 $_['entry_send_server_info'] = 'Send Server Information';
+$_['entry_time_period'] = 'Time period of countdown timer on payment page (in minutes)';
 
 // Help
 $_['help_underpayment_slack'] = 'Allow payments that are off by a small percentage';

@@ -42,6 +42,7 @@ class ControllerExtensionPaymentBlockonomics extends Controller {
 			$this->setting('api_key', $this->request->post['payment_blockonomics_api_key']);
 			$this->setting('underpayment_slack', $this->request->post['payment_blockonomics_underpayment_slack']);
 			$this->setting('complete_status', $this->request->post['payment_blockonomics_complete_status']);
+			$this->setting('time_period', $this->request->post['payment_blockonomics_time_period']);
 			$this->session->data['success'] = $this->language->get('text_success');
 			$this->response->redirect($this->url->link('extension/payment/blockonomics', 'user_token=' . $this->session->data['user_token'], true));
 		}
@@ -59,6 +60,7 @@ class ControllerExtensionPaymentBlockonomics extends Controller {
 		$data['entry_underpayment_slack'] = $this->language->get('entry_underpayment_slack');
 		$data['entry_callback_secret'] = $this->language->get('entry_callback_secret');
     	$data['entry_complete_status'] = $this->language->get('entry_complete_status');
+    	$data['entry_time_period'] = $this->language->get('entry_time_period');
 
 		$data['button_save'] = $this->language->get('button_save');
 		$data['button_cancel'] = $this->language->get('button_cancel');
@@ -100,6 +102,7 @@ class ControllerExtensionPaymentBlockonomics extends Controller {
 		$data['blockonomics_callback_secret'] = (isset($this->request->post['blockonomics_callback_secret'])) ? $this->request->post['blockonomics_callback_secret'] : $this->setting('callback_secret');
 		$data['blockonomics_api_key'] = (isset($this->request->post['blockonomics_api_key'])) ? $this->request->post['blockonomics_api_key'] : $this->setting('api_key');
 		$data['blockonomics_underpayment_slack'] = (isset($this->request->post['blockonomics_underpayment_slack'])) ? $this->request->post['blockonomics_underpayment_slack'] : $this->setting('underpayment_slack');
+		$data['blockonomics_time_period'] = (isset($this->request->post['blockonomics_time_period'])) ? $this->request->post['blockonomics_time_period'] : $this->setting('time_period');
 
     // #ORDER STATUSES
 		$this->load->model('localisation/order_status');
@@ -247,11 +250,13 @@ class ControllerExtensionPaymentBlockonomics extends Controller {
     //Generate callback secret
     $secret = md5(uniqid(rand(), true));
 
-    //Delete old settings from previous blockonomics installation
+	//Delete old settings from previous blockonomics installation
 		$default_callback_url = $this->url->link('extension/payment/blockonomics/callback&secret='.$secret , $this->config->get('config_secure'));
 		$default_callback_url = str_replace(HTTP_SERVER, HTTP_CATALOG, $default_callback_url);
 		$default_callback_url = str_replace(HTTPS_SERVER, HTTPS_CATALOG, $default_callback_url);
 		$default_callback_url = str_replace('&amp;1', '', $default_callback_url);
+
+		$default_time_period = 10;
 
 		$data['default_callback_url'] = $default_callback_url;
 		$this->db->query("DELETE FROM ".DB_PREFIX."setting WHERE code = 'blockonomics'");
@@ -266,7 +271,8 @@ class ControllerExtensionPaymentBlockonomics extends Controller {
 			'payment_blockonomics_api_key' => null,
 			'payment_blockonomics_underpayment_slack' => '0',
 			'payment_blockonomics_version' => $this->blockonomics->version,
-			'payment_blockonomics_complete_status' => $default_complete_status
+			'payment_blockonomics_complete_status' => $default_complete_status,
+			'payment_blockonomics_time_period' => $default_time_period
 		);
 		$this->model_setting_setting->editSetting('payment_blockonomics', $default_settings);
 
