@@ -147,7 +147,6 @@ class ControllerExtensionPaymentBlockonomics extends Controller {
 
     $data['success_url'] = $this->url->link('checkout/success');
     $data['websocket_url'] = $this->blockonomics->blockonomics_websocket_url;
-    $data['timeout_url'] = $this->url->link('extension/payment/blockonomics/timeout', $this->config->get('config_secure'));
     
     $sql = $this->db->query("SELECT * FROM ".DB_PREFIX."blockonomics_bitcoin_orders WHERE `id_order` = '".$order_id."' LIMIT 1");
     $order = $sql->row;
@@ -177,43 +176,8 @@ class ControllerExtensionPaymentBlockonomics extends Controller {
       $query="UPDATE ".DB_PREFIX."blockonomics_bitcoin_orders SET bits='".$bits."',value='".$fiat_amount."',timestamp=".$current_time." WHERE addr='".$order['addr']."'";
       $this->db->query($query);
     }
-
+	$data['time_remaining'] = 600;
     $this->response->setOutput($this->load->view('extension/payment/blockonomicsinvoice', $data));
-  }
-
-	/**
-	 * Shows timeout message
-	 * @return void
-	 */
-	public function timeout() {
-    
-    $this->document->setTitle($this->language->get('text_title'));
-
-		$data['breadcrumbs'] = array();
-
-		$data['breadcrumbs'][] = array(
-			'text' => $this->language->get('text_home'),
-			'href' => $this->url->link('common/home')
-		);
-
-		$data['breadcrumbs'][] = array(
-			'text' => $this->language->get('text_basket'),
-			'href' => $this->url->link('checkout/cart')
-		);
-
-		$data['breadcrumbs'][] = array(
-			'text' => $this->language->get('text_checkout'),
-			'href' => $this->url->link('checkout/checkout', '', true)
-		);
-
-    $data['column_left'] = $this->load->controller('common/column_left');
-		$data['column_right'] = $this->load->controller('common/column_right');
-		$data['content_top'] = $this->load->controller('common/content_top');
-		$data['content_bottom'] = $this->load->controller('common/content_bottom');
-		$data['footer'] = $this->load->controller('common/footer');
-		$data['header'] = $this->load->controller('common/header');
-
-		$this->response->setOutput($this->load->view('extension/payment/blockonomicstimeout', $data));
   }
 
 	/**
