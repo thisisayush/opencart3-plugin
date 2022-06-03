@@ -22,38 +22,44 @@
         <div id="btc-href" data-href="{{ btc_href }}"></div>
         <div id="btc-address" data-address="{{ btc_address }}"></div>
         <div id="order-timestamp" data-timestamp="{{ orderTimestamp }}"></div>
+        <div id="time-remaining" data-timeremaining="{{ time_remaining }}"></div>
 
-        <div style="width: 100%;height: 7px;background: #ddd;margin: 20px 0;overflow: hidden;position: relative;">
-          <div id="time-left" style="width: 100%;height: 7px;background: #666;left: 0;position: absolute;top: 0;"></div>
+        <div id="payment-wrapper">
+          <div style="width: 100%;height: 7px;background: #ddd;margin: 20px 0;overflow: hidden;position: relative;">
+            <div id="time-left" style="width: 100%;height: 7px;background: #666;left: 0;position: absolute;top: 0;"></div>
+          </div>
+
+          <div class="left big-text">
+            <span>Order# {{ order_id }}</span>
+          </div>
+          <div class="right big-text">
+            <span id="time-left-span"></span>
+          </div>
+          <div class="clear"></div>
+
+          <h2>To pay, send exact amount of BTC to the given address</h2>
+
+          <div id="address-div">
+            <h4>Bitcoin address</h4>
+            <a id="btc-address-a" href="{{ btc_href }}">
+              <div id="qrcode"></div>
+            </a>
+            <h4>Click on the qr code above to open in wallet</h4>
+          </div>
+
+          <div id="amount-div">
+            <h4>Amount</h4>
+            <h5>{{ satoshi_amount}} BTC ⇌ {{ fiat_amount}} {{ currency_code}}</h5>
+          </div>
+
+          <div style="clear: both;"></div>
+
+          <label id="btc-address-label">{{ btc_address }}</label>
         </div>
-
-        <div class="left big-text">
-          <span>Order# {{ order_id }}</span>
+        <div id="order-expired-wrapper" class="bnomics-order-expired-wrapper">
+          <h3 class="warning bnomics-status-warning">Payment Expired</h3><br>
+          <p><a href="#" id="try-again-button">Click here to try again</a></p>
         </div>
-        <div class="right big-text">
-          <span id="time-left-span"></span>
-        </div>
-        <div class="clear"></div>
-
-        <h2>To pay, send exact amount of BTC to the given address</h2>
-
-        <div id="address-div">
-          <h4>Bitcoin address</h4>
-          <a id="btc-address-a" href="{{ btc_href }}">
-            <div id="qrcode"></div>
-          </a>
-          <h4>Click on the qr code above to open in wallet</h4>
-        </div>
-
-        <div id="amount-div">
-          <h4>Amount</h4>
-          <h5>{{ satoshi_amount}} BTC ⇌ {{ fiat_amount}} {{ currency_code}}</h5>
-        </div>
-
-        <div style="clear: both;"></div>
-
-        <label id="btc-address-label">{{ btc_address }}</label>
-
         <div class="padding">
           <h3>Powered by blockonomics</h3>
         </div>
@@ -143,6 +149,10 @@
   padding: 1em;
 }
 
+#order-expired-wrapper {
+  display: none;
+}
+
   @media (max-width: 601px) {
     #payment-view {
       text-align: center;
@@ -162,7 +172,6 @@
 </style>
 <script type="text/javascript">
 var success_url = "{{ success_url }}";
-var timeout_url = "{{ timeout_url  }}";
 var websocket_url = "{{ websocket_url }}";
 
 $( document ).ready(function() {
@@ -181,6 +190,9 @@ $( document ).ready(function() {
   var timestampDiv = document.getElementById("order-timestamp");
   var orderTimestamp = timestampDiv.dataset.timestamp;
 
+  var timeRemainingDiv = document.getElementById("time-remaining");
+  var timeRemaining = parseInt(timeRemainingDiv.dataset.timeremaining);
+
   var timeLeftSpan = document.getElementById("time-left-span");
 
   // Seconds now from epoch
@@ -198,14 +210,12 @@ $( document ).ready(function() {
   window.setInterval(tick, 1000);
 
   var timeLeftElem = document.getElementById("time-left");
-  var totalTime = 600;
+  var totalTime = timeRemaining;
   var timeLeft = totalTime;
 
   // On every tick, update progressbar width to be percentage of total time divided by time left
   function tick() {
-
-    var timeUsed = new Date() / 1000 - orderTimestamp;
-    timeLeft = Math.round(totalTime - timeUsed);
+    timeLeft -= 1;
 
     var timeLeftPercentage = timeLeft / totalTime * 100;
     timeLeftElem.style.width = timeLeftPercentage + "%";
@@ -213,10 +223,17 @@ $( document ).ready(function() {
     timeLeftSpan.innerHTML = new Date(timeLeft * 1000).toISOString().substr(14, 5);
 
     if(timeLeft < 0) {
-      window.location.href = timeout_url;
+      document.getElementById('payment-wrapper').style.display = 'none';
+      document.getElementById('order-expired-wrapper').style.display = 'block';
     }
   }
+
+  document.getElementById("try-again-button").addEventListener('click', (e) => {
+    e.preventDefault();
+    window.location.reload();
+  })
 });
+
 
 </script>
 {{ footer }}
