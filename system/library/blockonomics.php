@@ -3,6 +3,9 @@
 /**
  * Blockonomics Library for OpenCart
  */
+
+namespace Opencart\Extension\Blockonomics\System\Library;
+
 class Blockonomics {
 
 	/** @var int $version */
@@ -26,10 +29,10 @@ class Blockonomics {
 
 		// Setup encryption
 		$fingerprint = substr(sha1(sha1(__DIR__)), 0, 24);
-    $this->encryption = new Encryption($fingerprint);
+    $this->encryption = new \Opencart\System\Library\Encryption($fingerprint);
 
     // Setup logging
-		$this->logger = new Log('blockonomics.log');
+		$this->logger = new \Opencart\System\Library\Log('blockonomics.log');
 
     $blockonomics_base_url = 'https://www.blockonomics.co';
     $this->blockonomics_websocket_url = 'wss://www.blockonomics.co';
@@ -76,7 +79,7 @@ class Blockonomics {
       $httpcode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
       curl_close($ch);
 
-      $responseObj = new stdClass();
+      $responseObj = new \stdClass();
       $responseObj->data = json_decode($data);
       $responseObj->response_code = $httpcode;
       return $responseObj;
@@ -169,7 +172,7 @@ class Blockonomics {
       $responseObj = json_decode($contents);
       //Create response object if it does not exist
       if (!isset($responseObj)) {
-          $responseObj = new stdClass();
+          $responseObj = new \stdClass();
       }
       $responseObj->{'response_code'} = curl_getinfo($ch, CURLINFO_HTTP_CODE);
       curl_close($ch);
@@ -195,7 +198,7 @@ class Blockonomics {
     $response["httpcode"] = $callback_httpcode;
       foreach($callback_responseObj as $key => $value){
         if(isset($value->callback)){
-          $response[$key] = new stdClass();
+          $response[$key] = new \stdClass();
           $response[$key]->callback = $value->callback;
           $response[$key]->address = $value->address;
         }
@@ -308,4 +311,11 @@ class Blockonomics {
 		// Get the setting
 		return $this->config->get($key);
 	}
+
+  public function get_crypto_rate_from_params($value, $satoshi) {
+    // Crypto Rate is re-calculated here and may slightly differ from the rate provided by Blockonomics
+    // This is required to be recalculated as the rate is not stored anywhere in $order, only the converted satoshi amount is.
+    // This method also helps in having a constant conversion and formatting for both JS and NoJS Templates avoiding the scientific notations.
+    return number_format($value*1.0e8/$satoshi, 2, '.', '');
+}
 }

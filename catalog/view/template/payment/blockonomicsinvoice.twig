@@ -1,0 +1,127 @@
+{{ header }}
+<div class="container">
+    <ol class="breadcrumb">
+        {% for breadcrumb in breadcrumbs %}
+            <li class="breadcrumb-item"><a href="{{ breadcrumb.href }}">{{ breadcrumb.text }}</a></li>
+        {% endfor %}
+    </ol>
+
+    <div class="row">
+        {{ column_left }}
+        {% if column_left and column_right %}
+            {% set class = 'col-sm-6' %}
+        {% elseif column_left or column_right %}
+            {% set class = 'col-sm-7 offset-sm-1' %}
+        {% else %}
+            {% set class = 'col-sm-8 offset-sm-2' %}
+        {% endif %}
+
+        <div id="content" class="{{ class }}">
+            {{ content_top }}
+
+            {% if address_error == ""  %}
+
+            <div id="blockonomics_checkout">
+                <div class="bnomics-order-container">
+
+                    <!-- Spinner -->
+                    <div class="bnomics-spinner-wrapper">
+                        <div class="bnomics-spinner"></div>
+                    </div>
+                    
+                    <!-- Blockonomics Checkout Panel -->    
+                    <div class="bnomics-order-panel">
+                        <table>
+                            <tr>
+                                <th class="bnomics-header">
+                                    <!-- Order Header -->
+                                    <span class="bnomics-order-id">
+                                        Order# {{ order_id }}
+                                    </span>
+                                    
+                                    <div>
+                                        <span class="blockonomics-icon-cart"></span>
+                                        {{ fiat_amount}} {{ currency_code}}
+                                    </div>
+                                </th>
+                            </tr>
+                        </table>
+                        <table>
+                            <tr>
+                                <th>
+                                    <!-- Order Address -->
+                                    <label class="bnomics-address-text">To pay, send bitcoin to this address:</label>
+                                    <label class="bnomics-copy-address-text">Copied to clipboard</label>
+                                    <div class="bnomics-copy-container">
+                                        <input type="text" value="{{ btc_address }}" id="bnomics-address-input" readonly/>
+                                        <span id="bnomics-address-copy" class="blockonomics-icon-copy"></span>
+                                        <span id="bnomics-show-qr" class="blockonomics-icon-qr"></span>
+                                    </div>
+                                    
+                                    <div class="bnomics-qr-code">
+                                        <div class="bnomics-qr">
+                                            <a href="{{ btc_href }}" target="_blank" class="bnomics-qr-link">
+                                                <canvas id="bnomics-qr-code"></canvas>
+                                            </a>
+                                        </div>
+                                        <small class="bnomics-qr-code-hint">
+                                            <a href="{{ btc_href }}" target="_blank" class="bnomics-qr-link">Open in wallet</a>
+                                        </small>
+                                    </div>
+
+                                </th>
+                            </tr>
+                        </table>
+                        <table>
+                            <tr>
+                                <th>
+                                    <label class="bnomics-amount-text">Amount of Bitcoin (BTC) to send:</label>
+                                    <label class="bnomics-copy-amount-text">Copied to clipboard</label>
+
+                                    <div class="bnomics-copy-container" id="bnomics-amount-copy-container">
+                                        <input type="text" value="{{ satoshi_amount}}" id="bnomics-amount-input" readonly/>
+                                        <span id="bnomics-amount-copy" class="blockonomics-icon-copy"></span>
+                                        <span id="bnomics-refresh" class="blockonomics-icon-refresh"></span>
+                                    </div>
+
+                                    <small class="bnomics-crypto-price-timer">
+                                        1 BTC = <span id="bnomics-crypto-rate">{{ crypto_rate }}</span> {{ currency_code}}, refreshes in <span class="bnomics-time-left">00:00 min</span>
+                                    </small>
+                                </th>
+                            </tr>
+
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            {% else %}
+            <div id="address-error">
+                <h3>Could not generate new bitcoin address.</h3>
+                <i>Note to webmaster: Please login to your admin panel, navigate to Extenstions > Payments > Blockonomics and click <i>Test Setup</i> to diagnose the issue.</i>
+            </div>
+            {% endif %}
+      {{ content_bottom }}
+    </div>
+    {{ column_right }}
+  </div>
+</div>
+
+<script>
+const blockonomics_data = JSON.stringify({
+    crypto: {
+        name: "Bitcoin",
+        code: "btc",
+        uri: "bitcoin"
+    },
+    crypto_address: "{{ btc_address }}",
+    time_period: 10,
+    finish_order_url: "{{ success_url }}",
+    get_order_amount_url: null,
+    payment_uri: "{{ btc_href }}"
+});
+// Automatically trigger only after DOM is loaded
+new Blockonomics({refresh_mode: 'normal'})
+</script>
+
+{{ footer }}

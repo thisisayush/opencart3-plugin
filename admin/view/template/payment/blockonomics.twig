@@ -1,0 +1,228 @@
+{{ header }}{{ column_left }}
+<div id="content">
+  <div class="page-header">
+    <div class="container-fluid">
+      <div class="float-end">
+        <button type="submit" form="form-blockonomics-account" data-toggle="tooltip" title="{{ button_save }}" class="btn btn-primary"><i class="fa-solid fa-save"></i></button>
+        <a href="{{ cancel }}" data-bs-toggle="tooltip" title="{{ button_cancel }}" class="btn btn-light"><i class="fa-solid fa-reply"></i></a>
+      </div>
+      <h1>{{ heading_title }}</h1>
+      <ol class="breadcrumb">
+        {% for breadcrumb in breadcrumbs %}
+        <li class="breadcrumb-item"><a href="{{ breadcrumb.href }}">{{ breadcrumb.text }}</a></li>
+        {% endfor %}
+      </ol>
+    </div>
+  </div>
+  
+  <div class="container-fluid">
+	
+    <div class="alert alert-dismissable fade show alert-success" id="msg_success" style="display: none">
+      <i class="fa-solid fa-check-circle text-success ml-2"></i> {{ text_congrats }}
+      <button type="button" class="btn-close float-end" data-bs-dismiss="alert">&times;</button>
+    </div>
+    <div class="alert alert-danger fade show alert-danger" id="msg_error" style="display: none">
+      <i class="fa-solid fa-exclamation-circle text-danger ml-2"></i> <span id="error_msg"></span>
+      <button type="button" class="btn-close float-end" data-bs-dismiss="alert">&times;</button>
+    </div>
+	
+    <form action="{{ url_action }}" method="post" id="form-blockonomics-account" data-oc-toggle="ajax">
+      <div class="card">
+        <div class="card-header">
+          <i class="fa-solid fa-pencil"></i> {{ text_general }}
+        </div>
+        <div class="card-body">
+          <input type="hidden" name="action" value="save">
+
+          <div class="row mb-3">
+            <label for="input-geo-zone" class="col-sm-2 col-form-label">{{ entry_geo_zone }}</label>
+            <div class="col-sm-10">
+              <select name="payment_blockonomics_geo_zone_id" id="input-geo-zone" class="form-select">
+                <option value="0">{{ text_all_zones }}</option>
+                {% for geo_zone in geo_zones %}
+                  <option value="{{ geo_zone.geo_zone_id }}"{% if geo_zone.geo_zone_id == blockonomics_geo_zone_id %} selected="selected"{% endif %}>{{ geo_zone.name }}</option>
+                {% endfor %}
+              </select>
+            </div>
+          </div>
+
+          <div class="row mb-3">
+            <label for="input-status" class="col-sm-2 col-form-label">{{ entry_status }}</label>
+            <div class="col-sm-10">
+              <div class="form-check form-switch form-switch-lg">
+                <input type="hidden" name="payment_blockonomics_status" value="0"/>
+                <input type="checkbox" name="payment_blockonomics_status" value="1" id="input-status" class="form-check-input"{% if blockonomics_status %} checked{% endif %}/>
+              </div>
+            </div>
+          </div>
+
+          <div class="row mb-3">
+            <label for="input-sort-order" class="col-sm-2 col-form-label">{{ entry_sort_order }}</label>
+            <div class="col-sm-10">
+              <input type="text" name="payment_blockonomics_sort_order" value="{{ blockonomics_sort_order }}" placeholder="{{ entry_sort_order }}" id="input-sort-order" class="form-control"/>
+            </div>
+          </div>
+
+          <div class="row mb-3">
+            <label for="input-complete-status" class="col-sm-2 col-form-label">{{ entry_complete_status }}</label>
+            <div class="col-sm-10">
+              <select name="payment_blockonomics_complete_status" id="input-complete-status" class="form-select">
+                {% for order_status in order_statuses %}
+                  <option value="{{ order_status.order_status_id }}"{% if order_status.order_status_id == blockonomics_complete_status %} selected="selected"{% endif %}>{{ order_status.name }}</option>
+                {% endfor %}
+              </select>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="card mt-3">
+        <div class="card-header">
+          <i class="fa-solid fa-pencil"></i> {{ text_advanced }}
+        </div>
+        <div class="card-body">
+
+          <input type="hidden" id="blockonomics_api_updated" value="false">
+
+          <div class="row mb-3">
+            <label for="blockonomics_api_key" class="col-sm-2 col-form-label">{{ entry_api_key }}</label>
+            <div class="col-sm-10">
+              <input type="text" name="payment_blockonomics_api_key" value="{{ blockonomics_api_key }}" placeholder="{{ entry_api_key }}" id="blockonomics_api_key" class="form-control" />
+            </div>
+          </div>
+
+          <div class="row mb-3">
+            <label for="input-callback-secret" class="col-sm-2 col-form-label">{{ entry_callback_secret }}</label>
+            <div class="col-sm-10">
+              <div class="input-group">
+                <input type="text" readonly name="payment_blockonomics_callback_secret" value="{{ blockonomics_callback_secret }}" placeholder="{{ entry_callback_secret }}" id="input-callback-secret" class="form-control"/>
+                <button type="button" onclick="doGenSecret()" class="btn btn-outline-secondary">{{ text_gen_secret }}</a>
+              </div>
+            </div>
+          </div>
+
+          <div class="row mb-3">
+            <label for="input-notify-url" class="col-sm-2 col-form-label">{{ entry_callback_url }}</label>
+            <div class="col-sm-10">
+              <input type="url" readonly name="payment_blockonomics_callback_url" value="{{ blockonomics_callback_url }}" placeholder="{{ entry_callback_url }}" id="input-notify-url" class="form-control" />
+              <div class="invalid-feedback">{{ error_callback_url }}</div>
+            </div>
+          </div>
+
+          <div class="row mb-3">
+            <label for="input-underpayment-slack" class="col-sm-2 col-form-label" data-bs-toggle="popover" data-bs-trigger="hover focus" data-bs-content="{{ help_underpayment_slack }}">{{ entry_underpayment_slack }}</label>
+            <div class="col-sm-10">
+              <input type="number" min="0" max="4" step="0.01" name="payment_blockonomics_underpayment_slack" value="{% if blockonomics_underpayment_slack != "" %}{{ blockonomics_underpayment_slack }}{% else %}{{ default_underpayment_slack }}{% endif %}" placeholder="{{ entry_underpayment_slack }}" id="input-underpayment-slack" class="form-control" />
+            </div>
+          </div>
+        </div>
+
+        <div class="card-footer">    
+          <div class="alert alert-warning fade show" style="display: none" id="unsaved_changes">
+            {{ text_changes }}
+          </div>
+          <button type="button" id="test_setup" onclick="doTestSetup()" title="{{ text_test_setup }}" class="btn btn-primary float-end">{{ text_test_setup }}</button>
+        </div>
+      </div>
+    </form>
+    <input readonly class="d-none" id="url_test_setup" value="{{ url_test_setup }}" />
+    <input readonly class="d-none" id="url_gen_secret" value="{{ url_gen_secret }}" />
+    <input readonly class="d-none" id="url_save" value="{{ url_action }}" />
+  </div>
+</div>
+<script type="text/javascript">
+
+  const apiendpoints = {
+    generate_secret: jQuery("#url_gen_secret").val(),
+    test_setup: jQuery("#url_test_setup").val(),
+    save: jQuery("#url_save").val()
+  }
+
+  let ajax_handler = null
+
+  jQuery(".form-control,.form-check-input").change(() => {
+    // Detect that forms has changed
+    jQuery("#unsaved_changes").show();
+    jQuery("#test_setup").hide();
+    if (!ajax_handler)
+      watch_ajax(apiendpoints.save, enable_test_setup)
+  });
+
+  function watch_ajax(url, callback) {
+    if(typeof jQuery != 'undefined') {
+      ajax_handler = (res, xhr, settings) => handle_ajax_save(res, xhr, settings, url, callback)
+      jQuery(document).on('ajaxComplete', ajax_handler)
+    }
+  }
+
+  function enable_test_setup() {
+    jQuery("#unsaved_changes").hide();
+    jQuery("#test_setup").show();
+  }
+
+  function handle_ajax_save(res, xhr, settings, url, callback){
+    // Method monitors all ajax requests and checks if they are success or not
+    // Success means 3 things:
+    // 1. Status Code is 200
+    // 2. Response is in JSON
+    // 3. There is no "error" key in response
+
+    if (settings.url == url) {
+      // We detected the Request
+
+      if (xhr.status == 200) {
+        let json = null
+        console.log(xhr.responseText)
+        try {
+          json = JSON.parse(xhr.responseText)
+        } catch(e) {
+          // Non JSON Response
+          console.log("Invalid response")
+          return
+        }
+        if (!json.error) {
+          jQuery(document).off('ajaxComplete', ajax_handler)
+          callback();
+        }
+      }
+    }
+  }
+
+  function doGenSecret(e) {
+    // Generate Secret and set the value to input boxes
+    // Backend API does not update the value in database, just generates and reverts back
+
+    jQuery.ajax({
+      method: 'POST',
+      url: apiendpoints.generate_secret
+    }).done(res => {
+      $("#input-callback-secret").val(res.callback_secret).change();
+      $("#input-notify-url").val(res.callback_url).change();
+    }).fail(err => {
+      alert("Unable to Generate Secret. Please try again!")
+    })
+  }
+
+  function doTestSetup(e) {
+    
+    jQuery("#msg_success").hide();
+    jQuery("#msg_error").hide();
+    jQuery("#test_setup").attr('disabled', 'disabled');
+
+    jQuery.ajax({
+      method: 'POST',
+      url: apiendpoints.test_setup
+    }).then(res => {
+      jQuery("#test_setup").removeAttr('disabled');
+      if (!res.error) jQuery("#msg_success").show();
+      else {
+        jQuery("#error_msg").html(res.error);
+        jQuery("#msg_error").show();
+      }
+      window.scrollTo(0,0);
+    }).fail(err => {
+      alert("An error occurred while testing setup, please try again!")
+    })
+  }
+</script>
+{{ footer }}

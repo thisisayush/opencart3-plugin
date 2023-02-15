@@ -2,7 +2,9 @@
 /**
  * Blockonomics Payment Model
  */
-class ModelExtensionPaymentBlockonomics extends Model {
+namespace Opencart\Catalog\Model\Extension\Blockonomics\Payment;
+
+class Blockonomics extends \Opencart\System\Engine\Model {
 
 	/** @var BlockonomicsLibrary $blockonomics */
 	private $blockonomics;
@@ -13,8 +15,11 @@ class ModelExtensionPaymentBlockonomics extends Model {
 	 */
 	public function __construct($registry) {
 		parent::__construct($registry);
-		$this->load->language('extension/payment/blockonomics');
-		$this->blockonomics = new Blockonomics($registry);
+
+		require(DIR_EXTENSION . 'blockonomics/system/library/blockonomics.php');
+
+		$this->load->language('extension/blockonomics/payment/blockonomics');
+		$this->blockonomics = new \Opencart\Extension\Blockonomics\System\Library\Blockonomics($registry);
 	}
 
 	/**
