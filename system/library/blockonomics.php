@@ -174,7 +174,7 @@ class Blockonomics {
       if (!isset($responseObj)) {
           $responseObj = new \stdClass();
       }
-      $responseObj->{'response_code'} = curl_getinfo($ch, CURLINFO_HTTP_CODE);
+      $responseObj->{'response_code'} = curl_getinfo($ch, CURLINFO_RESPONSE_CODE );
       curl_close($ch);
       return $responseObj;
   }
@@ -257,7 +257,7 @@ class Blockonomics {
     if ($error_str == '') {
         // Test new address generation
         $new_addresss_response = $this->getNewAddress(true);
-        if ($new_addresss_response->status != 200) {
+        if ($new_addresss_response->response_code != 200) {
             $error_str = $new_addresss_response->message;
         }
     }
@@ -317,7 +317,7 @@ class Blockonomics {
     // This is required to be recalculated as the rate is not stored anywhere in $order, only the converted satoshi amount is.
     // This method also helps in having a constant conversion and formatting for both JS and NoJS Templates avoiding the scientific notations.
     return number_format($value*1.0e8/$satoshi, 2, '.', '');
-}
+  }
 
   public function fix_displaying_small_values($satoshi){
     if ($satoshi < 10000){
