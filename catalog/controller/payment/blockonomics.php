@@ -122,9 +122,9 @@ class Blockonomics extends \Opencart\System\Engine\Controller {
 
 		$fiat_amount = $order_info['total'];
 		$bits = intval(1.0e8*$fiat_amount/$price);
-		$satoshi_amount = $bits/1.0e8;
+		$satoshi_amount = $this->blockonomics->fix_displaying_small_values($bits);
 		$data['satoshi_amount'] = $satoshi_amount;
-		$data['fiat_amount'] = $fiat_amount;
+		$data['fiat_amount'] = number_format($fiat_amount, 2);
 		$data['crypto_rate'] = $this->blockonomics->get_crypto_rate_from_params($fiat_amount, $bits);
 		$order_id = $order_info['order_id'];
     

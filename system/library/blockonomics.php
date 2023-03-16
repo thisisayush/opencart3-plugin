@@ -318,4 +318,12 @@ class Blockonomics {
     // This method also helps in having a constant conversion and formatting for both JS and NoJS Templates avoiding the scientific notations.
     return number_format($value*1.0e8/$satoshi, 2, '.', '');
 }
+
+  public function fix_displaying_small_values($satoshi){
+    if ($satoshi < 10000){
+      return rtrim(number_format($satoshi/1.0e8, 8),0);
+    } else {
+      return $satoshi/1.0e8;
+    }
+  }
 }
