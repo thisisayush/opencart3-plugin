@@ -221,6 +221,7 @@
       }
       window.scrollTo(0,0);
     }).fail(err => {
+      jQuery("#test_setup").removeAttr('disabled');
       alert("An error occurred while testing setup, please try again!")
     })
   }
