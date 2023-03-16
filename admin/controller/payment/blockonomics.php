@@ -229,13 +229,13 @@ class Blockonomics extends \Opencart\System\Engine\Controller {
 		$this->db->query("DELETE FROM ".DB_PREFIX."setting WHERE code = 'blockonomics'");
 		
 		$default_settings = array(
-			'payment_blockonomics_token' => null,
+			'payment_blockonomics_token' => '',
 			'payment_blockonomics_geo_zone_id' => '0',
 			'payment_blockonomics_status' => '0',
-			'payment_blockonomics_sort_order' => null,
+			'payment_blockonomics_sort_order' => '',
 			'payment_blockonomics_callback_secret' => $secret,
 			'payment_blockonomics_callback_url' => $default_callback_url,
-			'payment_blockonomics_api_key' => null,
+			'payment_blockonomics_api_key' => '',
 			'payment_blockonomics_underpayment_slack' => '0',
 			'payment_blockonomics_version' => $this->blockonomics->version,
 			'payment_blockonomics_complete_status' => $default_complete_status
