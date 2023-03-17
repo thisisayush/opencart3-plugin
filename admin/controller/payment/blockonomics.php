@@ -217,7 +217,7 @@ class Blockonomics extends \Opencart\System\Engine\Controller {
 		//Generate callback secret
 		$secret = md5(uniqid(rand(), true));
 
-		$default_callback_url = $this->url->link('extension/blockonomics/payment/callback&secret='.$secret , $this->config->get('config_secure'));
+		$default_callback_url = $this->url->link('extension/blockonomics/payment/blockonomics|callback&secret='.$secret , $this->config->get('config_secure'));
 		$default_callback_url = str_replace(HTTP_SERVER, HTTP_CATALOG, $default_callback_url);
 		if (defined('HTTPS_SERVER')) {
 			$default_callback_url = str_replace(HTTPS_SERVER, HTTPS_CATALOG, $default_callback_url);
