@@ -16,7 +16,7 @@ class Blockonomics extends \Opencart\System\Engine\Model {
 	public function __construct($registry) {
 		parent::__construct($registry);
 
-		require(DIR_EXTENSION . 'blockonomics/system/library/blockonomics.php');
+		require_once(DIR_EXTENSION . 'blockonomics/system/library/blockonomics.php');
 
 		$this->load->language('extension/blockonomics/payment/blockonomics');
 		$this->blockonomics = new \Opencart\Extension\Blockonomics\System\Library\Blockonomics($registry);

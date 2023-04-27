@@ -18,7 +18,7 @@ class Blockonomics extends \Opencart\System\Engine\Controller {
 	public function __construct($registry) {
 		parent::__construct($registry);
 
-		require(DIR_EXTENSION . 'blockonomics/system/library/blockonomics.php');
+		require_once(DIR_EXTENSION . 'blockonomics/system/library/blockonomics.php');
 
 		// echo "<h1>WORKIN</h1>";
 		// Make langauge strings and Blockonomics Library available to all

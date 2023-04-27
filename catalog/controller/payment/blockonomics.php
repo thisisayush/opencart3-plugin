@@ -19,7 +19,7 @@ class Blockonomics extends \Opencart\System\Engine\Controller {
 	public function __construct($registry) {
 		parent::__construct($registry);
 
-		require(DIR_EXTENSION . 'blockonomics/system/library/blockonomics.php');
+		require_once(DIR_EXTENSION . 'blockonomics/system/library/blockonomics.php');
 
 		// Make langauge strings and Blockonomics Library available to all
 		$this->load->language('extension/blockonomics/payment/blockonomics');
@@ -60,6 +60,8 @@ class Blockonomics extends \Opencart\System\Engine\Controller {
 	public function invoice() {
 
 		$this->load->model('checkout/order');
+
+		echo var_dump($this->session->data);
 
 		if (!isset($this->session->data['order_id'])) {
 			$this->response->redirect($this->url->link('checkout/cart'));
