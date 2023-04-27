@@ -61,8 +61,6 @@ class Blockonomics extends \Opencart\System\Engine\Controller {
 
 		$this->load->model('checkout/order');
 
-		echo var_dump($this->session->data);
-
 		if (!isset($this->session->data['order_id'])) {
 			$this->response->redirect($this->url->link('checkout/cart'));
 			return;
