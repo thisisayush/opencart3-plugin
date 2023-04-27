@@ -209,6 +209,12 @@ class Blockonomics {
 
   public function testsetup()
   {
+    $api_key = $this->setting('api_key');
+    
+    if (!isset($api_key) || strlen($api_key) == 0) {
+      return 'api_key';
+    }
+    
     $xpub_fetch_url = 'https://www.blockonomics.co/api/address?&no_balance=true&only_xpub=true&get_callback=true';
     $set_callback_url = 'https://www.blockonomics.co/api/update_callback';
     $error_str = '';
