@@ -143,21 +143,21 @@ class Blockonomics extends \Opencart\System\Engine\Controller {
 
 		// If there is no existing order in database, generate Bitcoin address
 		if(!isset($order['id_order'])){
-		$response = $this->blockonomics->getNewAddress();
-		if($response->response_code == 200) {
-			$btc_address=$response->address;
-			$data['btc_address'] = $btc_address;
-			$data['btc_href'] = "bitcoin:".$btc_address."?amount=".$satoshi_amount;
+			$response = $this->blockonomics->getNewAddress();
+			if($response->response_code == 200) {
+				$btc_address=$response->address;
+				$data['btc_address'] = $btc_address;
+				$data['btc_href'] = "bitcoin:".$btc_address."?amount=".$satoshi_amount;
 
-			$this->blockonomics->log('info', $btc_address, 1);
-			$this->blockonomics->log('info', $price, 1);
+				$this->blockonomics->log('info', $btc_address, 1);
+				$this->blockonomics->log('info', $price, 1);
 
-			//Insert into blockonomics orders table
-			$this->db->query("INSERT IGNORE INTO ".DB_PREFIX."blockonomics_bitcoin_orders (id_order, timestamp,  addr, txid, status,value, bits, bits_payed) VALUES
-			('".(int)$order_id."','".(int)$current_time."','".$btc_address."', '', -1,'".(float)$fiat_amount."','".(int)$bits."', 0)");
-		} else {
-			$data['address_error'] = true;
-		}
+				//Insert into blockonomics orders table
+				$this->db->query("INSERT IGNORE INTO ".DB_PREFIX."blockonomics_bitcoin_orders (id_order, timestamp,  addr, txid, status,value, bits, bits_payed) VALUES
+				('".(int)$order_id."','".(int)$current_time."','".$btc_address."', '', -1,'".(float)$fiat_amount."','".(int)$bits."', 0)");
+			} else {
+				$data['address_error'] = true;
+			}
 		// If existing order is found, use existing BTC address and update price and timestamp
 		} else {
 			$data['btc_address'] = $order['addr'];
